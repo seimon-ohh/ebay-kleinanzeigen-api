@@ -13,4 +13,10 @@ RUN playwright install-deps
 
 COPY . .
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Stellen Sie sicher, dass 8000 der Standardport ist, 
+# aber erlauben Sie, dass er durch die PORT-Umgebungsvariable überschrieben wird
+ENV PORT=8000
+EXPOSE $PORT
+
+# Verwenden Sie python direkt für die main.py, die jetzt die PORT-Umgebungsvariable liest
+CMD ["python", "main.py"]
