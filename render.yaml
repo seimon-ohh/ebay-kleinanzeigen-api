@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: ebay-kleinanzeigen-api
+    env: docker
+    region: frankfurt
+    plan: starter
+    healthCheckPath: /
+    buildCommand: docker build -t ebay-kleinanzeigen-api .
+    startCommand: docker run -p 8000:8000 ebay-kleinanzeigen-api
+    numInstances: 1
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: EBAY_API_BASE_URL
+        value: https://ebay-kleinanzeigen-api.onrender.com
+    autoDeploy: true 
