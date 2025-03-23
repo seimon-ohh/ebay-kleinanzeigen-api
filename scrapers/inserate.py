@@ -80,9 +80,32 @@ async def get_ads(page):
                 price_text = price_text.replace("€", "").replace("VB", "").replace(".", "").strip()
                 description = await article.query_selector("p.aditem-main--middle--description")
                 description_text = await description.inner_text() if description else ""
+                
+                # Get image URL
+                image_element = await article.query_selector(".imagebox img")
+                image_url = ""
+                if image_element:
+                    image_url = await image_element.get_attribute("src")
+                    # If src is not available, try data-src
+                    if not image_url:
+                        image_url = await image_element.get_attribute("data-src")
+                    # If still not found, look for srcset
+                    if not image_url:
+                        srcset = await image_element.get_attribute("srcset")
+                        if srcset:
+                            # Extract the first image URL from srcset
+                            image_url = srcset.split(",")[0].split(" ")[0]
+                
                 if data_adid and data_href:
                     data_href = f"https://www.kleinanzeigen.de{data_href}"
-                    results.append({"adid": data_adid, "url": data_href, "title": title_text, "price": price_text, "description": description_text})
+                    results.append({
+                        "adid": data_adid, 
+                        "url": data_href, 
+                        "title": title_text, 
+                        "price": price_text, 
+                        "description": description_text,
+                        "image_url": image_url
+                    })
         return results
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

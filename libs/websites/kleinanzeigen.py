@@ -16,11 +16,49 @@ async def get_elements_content(page: Page, selector: str) -> List[str]:
 
 async def get_image_sources(page: Page, selector: str) -> List[str]:
     images: List[str] = []
-    image_element: Optional[ElementHandle] = await page.query_selector(selector)
-    if image_element:
-        src: Optional[str] = await image_element.get_attribute("src")
-        if src:
-            images.append(src)
+    
+    # Try to get all images in the gallery
+    gallery_elements = await page.query_selector_all("#viewad-product-gallery img")
+    if gallery_elements:
+        for img in gallery_elements:
+            src = await img.get_attribute("src")
+            if src:
+                images.append(src)
+            else:
+                # Try data-src if src is not available
+                data_src = await img.get_attribute("data-src")
+                if data_src:
+                    images.append(data_src)
+                else:
+                    # Try srcset if neither src nor data-src is available
+                    srcset = await img.get_attribute("srcset")
+                    if srcset:
+                        # Extract the first image URL from srcset
+                        first_image = srcset.split(",")[0].split(" ")[0]
+                        if first_image:
+                            images.append(first_image)
+    
+    # Fallback to single image if gallery not found
+    if not images:
+        image_element: Optional[ElementHandle] = await page.query_selector(selector)
+        if image_element:
+            src: Optional[str] = await image_element.get_attribute("src")
+            if src:
+                images.append(src)
+            else:
+                # Try data-src if src is not available
+                data_src = await image_element.get_attribute("data-src")
+                if data_src:
+                    images.append(data_src)
+                else:
+                    # Try srcset if neither src nor data-src is available
+                    srcset = await image_element.get_attribute("srcset")
+                    if srcset:
+                        # Extract the first image URL from srcset
+                        first_image = srcset.split(",")[0].split(" ")[0]
+                        if first_image:
+                            images.append(first_image)
+    
     return images
 
 
